@@ -289,15 +289,28 @@ const ChemEDashboard = {
       form.reset();
     };
     document.getElementById('generate-report').onclick = () => {
-      const html = `<h2>Compliance Report</h2><ul>${this.events.slice(0,5).map(e=>`<li>${e.type}: ${e.details} (${e.status})</li>`).join('')}</ul><p>Compliance: ${this.compliance}%</p><p>Cost: $${this.cost.toFixed(2)}${this.costUnit}</p>`;
-      const blob = new Blob([`<html><body>${html}</body></html>`], {type:'text/html'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'compliance_report.html';
-      a.click();
-      URL.revokeObjectURL(url);
-      this.showToast('Compliance report generated!');
+      // PDF generation using jsPDF
+      if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+        this.showToast('jsPDF library not loaded!');
+        return;
+      }
+      const doc = new (window.jspdf ? window.jspdf.jsPDF : window.jsPDF)();
+      doc.setFontSize(18);
+      doc.text('Compliance Report', 14, 20);
+      doc.setFontSize(12);
+      let y = 32;
+      doc.text('Recent Events:', 14, y);
+      y += 8;
+      this.events.slice(0,5).forEach(e => {
+        doc.text(`- ${e.type}: ${e.details} (${e.status})`, 16, y);
+        y += 7;
+      });
+      y += 4;
+      doc.text(`Compliance: ${this.compliance}%`, 14, y);
+      y += 8;
+      doc.text(`Cost: $${this.cost.toFixed(2)}${this.costUnit}`, 14, y);
+      doc.save('compliance_report.pdf');
+      this.showToast('Compliance report PDF generated!');
     };
     this.renderMonthlyReviewLog();
     document.getElementById('documentation-panel').innerHTML = `
