@@ -237,6 +237,25 @@ h1 {
   opacity: 1;
   pointer-events: auto;
 }
+#ai-status {
+  margin-top: 1em;
+  padding: 0.5rem;
+  border-radius: 5x;
+  background: #1c5858;
+  color: #f7fafc;
+}
+
+#ai-analysis-panel {
+  margin-top: 1em;
+}
+
+#ai-results {  margin-top: 1rem;
+  background: #11222c;
+  border-radius:8px;
+  padding: 1em;
+  min-height: 100x;
+  color: #f7fafc;
+}
 @media (max-width: 900px) {
   .dashboard-panels { flex-direction: column; }
   #modal-content { min-width: 90vw; }
