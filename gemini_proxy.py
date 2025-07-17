@@ -238,13 +238,12 @@ Format this as a professional report suitable for regulatory submission and exec
 @app.route('/api/proxy', methods=['POST'])
 def proxy():
     data = request.json
-    api_key = os.getenv('MY_API_KEY')
+    api_key = os.getenv('GEMINI_API_KEY')
     if not api_key:
         return jsonify({'error': 'API key not set in environment'}), 500
-    # Example: Forward request to a third-party API using the API key
     try:
         response = requests.post(
-            'https://thirdparty.com/api',  # Replace with your real API endpoint
+            'https://api.deepseek.com/v1/chat/completions',
             json=data,
             headers={'Authorization': f'Bearer {api_key}'}
         )
