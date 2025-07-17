@@ -27,7 +27,7 @@ def openrouter_query(prompt):
             {'role': 'user', 'content': prompt}
         ]
     }
-    resp = requests.post(OPENROUTER_API_URL, headers=headers, json=data)
+    resp = requests.post(OPENROUTER_API_URL, headers=headers, json=data, timeout=15)
     if resp.status_code == 200:
         try:
             return resp.json()['choices'][0]['message']['content']
@@ -101,7 +101,8 @@ def proxy():
         response = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
             json=data,
-            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'}
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            timeout=15
         )
         response.raise_for_status()
         return jsonify(response.json())
