@@ -32,7 +32,25 @@ def gemini_query(prompt):
 @app.route('/api/gemini/analyze', methods=['POST'])
 def analyze():
     events = request.json.get('events', [])
-    prompt = f"Analyze these recent events for risks, trends, and recommendations (short summary):\n{events}"
+    
+    if not events:
+        return jsonify({'result': 'No events to analyze. Please add some events first.'})
+    
+    # Create a detailed prompt for event analysis
+    prompt = f"""energy consultant, analyze these recent events from a chemical energy facility dashboard:
+
+EVENTS DATA:
+{events}
+
+Please provide a comprehensive analysis including:
+1isk assessment and severity levels
+2. Operational trends and patterns
+3. Compliance implications
+4. Recommended immediate actions
+5. Long-term strategic recommendations
+
+Focus on actionable insights that would help facility managers make informed decisions. Be specific about risks, costs, and compliance impacts."""
+
     result = gemini_query(prompt)
     return jsonify({'result': result})
 
@@ -41,14 +59,49 @@ def report():
     events = request.json.get('events', [])
     compliance = request.json.get('compliance')
     cost = request.json.get('cost')
-    prompt = f"Generate a compliance and cost report based on these events: {events}, compliance: {compliance}, cost: {cost}."
+    
+    prompt = f"""Generate a professional compliance and cost analysis report for a chemical energy facility:
+
+FACILITY DATA:
+- Compliance Rate: {compliance}%
+- Current Cost: ${cost}M
+- Recent Events: {events}
+
+Please provide:
+1. Executive Summary
+2. Compliance Analysis (trends, gaps, recommendations)
+3Cost Analysis (budget vs actual, efficiency metrics)
+4. Risk Assessment
+5. Action Items and Timeline
+6. Regulatory Compliance Status
+
+Format as a professional report with clear sections and actionable recommendations."""
+
     result = gemini_query(prompt)
     return jsonify({'result': result})
 
 @app.route('/api/gemini/predict', methods=['POST'])
 def predict():
     assets = request.json.get('assets', [])
-    prompt = f"Predict maintenance needs and risks for these assets: {assets}."
+    
+    if not assets:
+        return jsonify({'result': 'No assets to analyze. Please check asset data.'})
+    
+    prompt = f"""fictive maintenance AI specialist, analyze these energy facility assets:
+
+ASSETS DATA:
+{assets}
+
+Please provide:
+1. Asset Health Assessment (for each asset)
+2. Failure Risk Predictions (probability and timeline)
+3. Maintenance Priority Ranking
+4. Recommended Maintenance Schedule
+5. Cost-Benefit Analysis of Preventive vs Reactive Maintenance
+6. Resource Allocation Recommendations7l Asset Protection Strategies
+
+Include specific timelines, risk scores, and cost estimates where possible. Focus on preventing costly failures and optimizing maintenance budgets."""
+
     result = gemini_query(prompt)
     return jsonify({'result': result})
 
