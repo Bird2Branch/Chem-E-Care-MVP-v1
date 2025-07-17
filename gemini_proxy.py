@@ -108,13 +108,5 @@ def proxy():
     except requests.RequestException as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/<path:path>', methods=['OPTIONS'])
-def options_handler(path):
-    response = make_response()
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
-
 if __name__ == '__main__':
     app.run(debug=True) 
