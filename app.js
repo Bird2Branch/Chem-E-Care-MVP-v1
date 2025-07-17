@@ -64,21 +64,30 @@ const ChemEDashboard = {
       document.getElementById('predict-maintenance')
     ];
 
+    // Debug: Check if buttons exist
+    console.log('AI Buttons found:', aiButtons.map(btn => btn ? 'Found' : 'Not found'));
+
     function setAiConfigured(configured) {
       const aiStatusText = document.getElementById('ai-status-text');
       if (configured) {
-        aiStatusText.textContent = 'AI Analysis: Ready';
-        aiButtons.forEach(btn => btn.disabled = false);
+        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Ready';
+        aiButtons.forEach(btn => {
+          if (btn) btn.disabled = false;
+        });
       } else {
-        aiStatusText.textContent = 'AI Analysis: Not available';
-        aiButtons.forEach(btn => btn.disabled = true);
+        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Not available';
+        aiButtons.forEach(btn => {
+          if (btn) btn.disabled = true;
+        });
       }
     }
 
     setAiConfigured(true); // Always enabled if backend is present
 
     if (aiButtons[0]) aiButtons[0].onclick = async function() {
-      document.getElementById('ai-results').innerHTML = '<em>Analyzing recent events...</em>';
+      console.log('Analyze events clicked');
+      const resultsDiv = document.getElementById('ai-results');
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events...</em>';
       try {
         const res = await fetch('https://chem-e-care.onrender.com/api/gemini/analyze', {
           method: 'POST',
@@ -86,13 +95,16 @@ const ChemEDashboard = {
           body: JSON.stringify({ events: ChemEDashboard.events })
         });
         const data = await res.json();
-        document.getElementById('ai-results').textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
       } catch (e) {
-        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        console.error('AI Error:', e);
       }
     };
     if (aiButtons[1]) aiButtons[1].onclick = async function() {
-      document.getElementById('ai-results').innerHTML = '<em>Generating AI report...</em>';
+      console.log('Generate AI report clicked');
+      const resultsDiv = document.getElementById('ai-results');
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report...</em>';
       try {
         const res = await fetch('https://chem-e-care.onrender.com/api/gemini/report', {
           method: 'POST',
@@ -100,13 +112,16 @@ const ChemEDashboard = {
           body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
         });
         const data = await res.json();
-        document.getElementById('ai-results').textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
       } catch (e) {
-        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        console.error('AI Error:', e);
       }
     };
     if (aiButtons[2]) aiButtons[2].onclick = async function() {
-      document.getElementById('ai-results').innerHTML = '<em>Predicting maintenance needs...</em>';
+      console.log('Predict maintenance clicked');
+      const resultsDiv = document.getElementById('ai-results');
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs...</em>';
       try {
         const res = await fetch('https://chem-e-care.onrender.com/api/gemini/predict', {
           method: 'POST',
@@ -114,9 +129,10 @@ const ChemEDashboard = {
           body: JSON.stringify({ assets: ChemEDashboard.assets })
         });
         const data = await res.json();
-        document.getElementById('ai-results').textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
       } catch (e) {
-        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        console.error('AI Error:', e);
       }
     };
   },
