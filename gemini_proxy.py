@@ -3,6 +3,10 @@ from flask import Flask, request, jsonify, make_response
 import requests
 from flask_cors import CORS
 import base64
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (for local development)
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)  # This helps with some Render setups
@@ -15,8 +19,9 @@ def after_request(response):
     return response
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
-GEMINI_VISION_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent'
+# Updated to Gemini 1.5 model endpoints
+GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent'
+GEMINI_VISION_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-vision:generateContent'
 
 if not GEMINI_API_KEY:
     raise RuntimeError('GEMINI_API_KEY environment variable not set!')
@@ -229,6 +234,24 @@ Format this as a professional report suitable for regulatory submission and exec
 
     result = gemini_query(prompt)
     return jsonify({'result': result})
+
+@app.route('/api/proxy', methods=['POST'])
+def proxy():
+    data = request.json
+    api_key = os.getenv('MY_API_KEY')
+    if not api_key:
+        return jsonify({'error': 'API key not set in environment'}), 500
+    # Example: Forward request to a third-party API using the API key
+    try:
+        response = requests.post(
+            'https://thirdparty.com/api',  # Replace with your real API endpoint
+            json=data,
+            headers={'Authorization': f'Bearer {api_key}'}
+        )
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/<path:path>', methods=['OPTIONS'])
 def options_handler(path):
