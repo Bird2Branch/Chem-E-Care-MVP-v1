@@ -19,9 +19,9 @@ def after_request(response):
     return response
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-# Updated to Gemini 1.5 model endpoints
-GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent'
-GEMINI_VISION_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-vision:generateContent'
+# Set to Gemini Pro free tier models
+GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+GEMINI_VISION_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent'
 
 if not GEMINI_API_KEY:
     raise RuntimeError('GEMINI_API_KEY environment variable not set!')
