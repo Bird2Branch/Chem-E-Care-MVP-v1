@@ -236,5 +236,9 @@ Format this as a professional report suitable for regulatory submission and exec
     result = gemini_query(prompt)
     return jsonify({'result': result})
 
+@app.route('/api/cors-test', methods=['GET', 'OPTIONS'])
+def cors_test():
+    return jsonify({'status': 'ok'})
+
 if __name__ == '__main__':
     app.run(debug=True)
