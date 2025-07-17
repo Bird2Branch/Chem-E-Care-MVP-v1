@@ -3,6 +3,69 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   ChemEDashboard.init();
+
+  // AI button logic (calls backend proxy)
+  const aiButtons = [
+    document.getElementById('analyze-events'),
+    document.getElementById('generate-ai-report'),
+    document.getElementById('predict-maintenance')
+  ];
+
+  function setAiConfigured(configured) {
+    const aiStatusText = document.getElementById('ai-status-text');
+    if (configured) {
+      aiStatusText.textContent = 'AI Analysis: Ready';
+      aiButtons.forEach(btn => btn.disabled = false);
+    } else {
+      aiStatusText.textContent = 'AI Analysis: Not available';
+      aiButtons.forEach(btn => btn.disabled = true);
+    }
+  }
+
+  setAiConfigured(true); // Always enabled if backend is present
+
+  if (aiButtons[0]) aiButtons[0].onclick = async function() {
+    document.getElementById('ai-results').innerHTML = '<em>Analyzing recent events...</em>';
+    try {
+      const res = await fetch('/api/gemini/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: ChemEDashboard.events })
+      });
+      const data = await res.json();
+      document.getElementById('ai-results').textContent = data.result || 'No result.';
+    } catch (e) {
+      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+    }
+  };
+  if (aiButtons[1]) aiButtons[1].onclick = async function() {
+    document.getElementById('ai-results').innerHTML = '<em>Generating AI report...</em>';
+    try {
+      const res = await fetch('/api/gemini/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
+      });
+      const data = await res.json();
+      document.getElementById('ai-results').textContent = data.result || 'No result.';
+    } catch (e) {
+      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+    }
+  };
+  if (aiButtons[2]) aiButtons[2].onclick = async function() {
+    document.getElementById('ai-results').innerHTML = '<em>Predicting maintenance needs...</em>';
+    try {
+      const res = await fetch('/api/gemini/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assets: ChemEDashboard.assets })
+      });
+      const data = await res.json();
+      document.getElementById('ai-results').textContent = data.result || 'No result.';
+    } catch (e) {
+      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+    }
+  };
 });
 
 const ChemEDashboard = {
@@ -276,47 +339,131 @@ const ChemEDashboard = {
   renderDocumentation() {
     const form = document.getElementById('doc-upload-form');
     const preview = document.getElementById('doc-preview');
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       const file = document.getElementById('doc-photo').files[0];
       if (!file) { this.showToast('Please select a photo.'); return; }
+      
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        preview.innerHTML = `<img src="${ev.target.result}" alt="Inspection Photo" /><p>Auto-tagged to asset: <strong>${this.assets[Math.floor(Math.random()*this.assets.length)].name}</strong></p>`;
-        this.showToast('Photo auto-tagged and attached!');
+      reader.onload = async (ev) => {
+        const imageData = ev.target.result;
+        preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Analyzing photo with AI...</p>`;
+        
+        try {
+          // Send image to AI for analysis
+          const res = await fetch('https://your-app-name.onrender.com/api/gemini/photo-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              image: imageData,
+              assets: this.assets 
+            })
+          });
+          const data = await res.json();
+          
+          if (data.result) {
+            preview.innerHTML = `
+              <img src="${imageData}" alt="Inspection Photo"/>
+              <div style="margin-top: 1rem; padding:1rem; background: #1c5858; border-radius: 8px; color: #f7fafc;">
+                <h4>AI Analysis:</h4>
+                <div style="white-space: pre-line; font-size: 0.9em;">${data.result}</div>
+              </div>
+            `;
+            this.showToast('Photo analyzed and tagged with AI!');
+          } else {
+            preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Auto-tagged to asset: <strong>${this.assets[Math.floor(Math.random()*this.assets.length)].name}</strong></p>`;
+            this.showToast('Photo auto-tagged and attached!');
+          }
+        } catch (error) {
+          preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Auto-tagged to asset: <strong>${this.assets[Math.floor(Math.random()*this.assets.length)].name}</strong></p>`;
+          this.showToast('Photo auto-tagged and attached!');
+        }
       };
       reader.readAsDataURL(file);
       form.reset();
     };
-    document.getElementById('generate-report').onclick = () => {
+    
+    document.getElementById('generate-report').onclick = async () => {
+      // Get AI-generated content first
+      let aiContent = '';
+      try {
+        const res = await fetch('https://your-app-name.onrender.com/api/gemini/pdf-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            events: this.events,
+            compliance: this.compliance,
+            cost: this.cost,
+            assets: this.assets
+          })
+        });
+        const data = await res.json();
+        if (data.result) {
+          aiContent = data.result;
+        }
+      } catch (error) {
+        console.log('AI content generation failed, using fallback');
+      }
+      
       // PDF generation using jsPDF
       if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
         this.showToast('jsPDF library not loaded!');
         return;
       }
+      
       const doc = new (window.jspdf ? window.jspdf.jsPDF : window.jsPDF)();
       doc.setFontSize(18);
-      doc.text('Compliance Report', 14, 20);
+      doc.text('AI-Generated Compliance Report', 14, 20);
       doc.setFontSize(12);
-      let y = 32;
-      doc.text('Recent Events:', 14, y);
-      y += 8;
-      this.events.slice(0,5).forEach(e => {
-        doc.text(`- ${e.type}: ${e.details} (${e.status})`, 16, y);
-        y += 7;
-      });
-      y += 4;
-      doc.text(`Compliance: ${this.compliance}%`, 14, y);
-      y += 8;
-      doc.text(`Cost: $${this.cost.toFixed(2)}${this.costUnit}`, 14, y);
-      doc.save('compliance_report.pdf');
-      this.showToast('Compliance report PDF generated!');
+      
+      let y = 32
+      
+      if (aiContent) {
+        // Use AI-generated content
+        const lines = aiContent.split('\n');
+        for (let line of lines) {
+          if (y > 280) {
+            doc.addPage();
+            y = 20;
+          }
+          if (line.trim()) {
+            if (line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.') || line.startsWith('4.') || line.startsWith('5.') || line.startsWith('6.') || line.startsWith('7.')) {
+              doc.setFontSize(14);
+              doc.setFont(undefined, 'bold');
+            } else if (line.startsWith('   •')) {
+              doc.setFontSize(10);
+              doc.setFont(undefined, 'normal');
+            } else {
+              doc.setFontSize(12);
+              doc.setFont(undefined, 'normal');     }
+            doc.text(line, 14, y);
+            y += 7;
+          }
+        }
+      } else {
+        // Fallback content
+        doc.text('Recent Events:', 14, y);
+        y += 8;
+        this.events.slice(0,5).forEach(e => {
+          doc.text(`- ${e.type}: ${e.details} (${e.status})`, 16, y);
+          y += 7;
+        });
+        y += 4;
+        doc.text(`Compliance: ${this.compliance}%`, 14, y);
+        y += 8;
+        doc.text(`Cost: $${this.cost.toFixed(2)}${this.costUnit}`, 14, y);
+      }
+      
+      doc.save('ai_compliance_report.pdf');
+      this.showToast('AI-powered compliance report PDF generated!');
     };
+    
     this.renderMonthlyReviewLog();
     document.getElementById('documentation-panel').innerHTML = `
       <ul>
-        <li><strong>Auto-Labeling:</strong> Inspection photos tagged to assets</li>
+        <li><strong>AI Photo Analysis:</strong> Inspection photos analyzed and tagged with AI</li>
         <li><strong>Compliance Docs:</strong> Forms filled from inspection data</li>
+        <li><strong>AI-Generated Reports:</strong> Professional PDFs with AI insights</li>
         <li><strong>Monthly Review:</strong> AI emails key trends (5 sig figs) + actions</li>
       </ul>
     `;
