@@ -3,69 +3,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   ChemEDashboard.init();
-
-  // AI button logic (calls backend proxy)
-  const aiButtons = [
-    document.getElementById('analyze-events'),
-    document.getElementById('generate-ai-report'),
-    document.getElementById('predict-maintenance')
-  ];
-
-  function setAiConfigured(configured) {
-    const aiStatusText = document.getElementById('ai-status-text');
-    if (configured) {
-      aiStatusText.textContent = 'AI Analysis: Ready';
-      aiButtons.forEach(btn => btn.disabled = false);
-    } else {
-      aiStatusText.textContent = 'AI Analysis: Not available';
-      aiButtons.forEach(btn => btn.disabled = true);
-    }
-  }
-
-  setAiConfigured(true); // Always enabled if backend is present
-
-  if (aiButtons[0]) aiButtons[0].onclick = async function() {
-    document.getElementById('ai-results').innerHTML = '<em>Analyzing recent events...</em>';
-    try {
-      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: ChemEDashboard.events })
-      });
-      const data = await res.json();
-      document.getElementById('ai-results').textContent = data.result || 'No result.';
-    } catch (e) {
-      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
-    }
-  };
-  if (aiButtons[1]) aiButtons[1].onclick = async function() {
-    document.getElementById('ai-results').innerHTML = '<em>Generating AI report...</em>';
-    try {
-      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
-      });
-      const data = await res.json();
-      document.getElementById('ai-results').textContent = data.result || 'No result.';
-    } catch (e) {
-      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
-    }
-  };
-  if (aiButtons[2]) aiButtons[2].onclick = async function() {
-    document.getElementById('ai-results').innerHTML = '<em>Predicting maintenance needs...</em>';
-    try {
-      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assets: ChemEDashboard.assets })
-      });
-      const data = await res.json();
-      document.getElementById('ai-results').textContent = data.result || 'No result.';
-    } catch (e) {
-      document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
-    }
-  };
 });
 
 const ChemEDashboard = {
@@ -117,6 +54,71 @@ const ChemEDashboard = {
     this.renderBenefitsTable();
     this.setupModals();
     this.setupToasts();
+    this.setupAIButtons(); // Add AI button setup here
+  },
+  setupAIButtons() {
+    // AI button logic (calls backend proxy)
+    const aiButtons = [
+      document.getElementById('analyze-events'),
+      document.getElementById('generate-ai-report'),
+      document.getElementById('predict-maintenance')
+    ];
+
+    function setAiConfigured(configured) {
+      const aiStatusText = document.getElementById('ai-status-text');
+      if (configured) {
+        aiStatusText.textContent = 'AI Analysis: Ready';
+        aiButtons.forEach(btn => btn.disabled = false);
+      } else {
+        aiStatusText.textContent = 'AI Analysis: Not available';
+        aiButtons.forEach(btn => btn.disabled = true);
+      }
+    }
+
+    setAiConfigured(true); // Always enabled if backend is present
+
+    if (aiButtons[0]) aiButtons[0].onclick = async function() {
+      document.getElementById('ai-results').innerHTML = '<em>Analyzing recent events...</em>';
+      try {
+        const res = await fetch('https://chem-e-care.onrender.com/api/gemini/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: ChemEDashboard.events })
+        });
+        const data = await res.json();
+        document.getElementById('ai-results').textContent = data.result || 'No result.';
+      } catch (e) {
+        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+      }
+    };
+    if (aiButtons[1]) aiButtons[1].onclick = async function() {
+      document.getElementById('ai-results').innerHTML = '<em>Generating AI report...</em>';
+      try {
+        const res = await fetch('https://chem-e-care.onrender.com/api/gemini/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
+        });
+        const data = await res.json();
+        document.getElementById('ai-results').textContent = data.result || 'No result.';
+      } catch (e) {
+        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+      }
+    };
+    if (aiButtons[2]) aiButtons[2].onclick = async function() {
+      document.getElementById('ai-results').innerHTML = '<em>Predicting maintenance needs...</em>';
+      try {
+        const res = await fetch('https://chem-e-care.onrender.com/api/gemini/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assets: ChemEDashboard.assets })
+        });
+        const data = await res.json();
+        document.getElementById('ai-results').textContent = data.result || 'No result.';
+      } catch (e) {
+        document.getElementById('ai-results').textContent = 'Error contacting AI backend.';
+      }
+    };
   },
   // --- Entry Points ---
   renderEventForm() {
