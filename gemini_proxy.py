@@ -5,7 +5,7 @@ from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
-CORS(app, origins=["https://chem-e-care-frontend.onrender.com"])  # Restrict CORS to your frontend domain
+CORS(app)  # Allow all origins for debugging
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
