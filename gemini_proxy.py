@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://chem-e-care-frontend.onrender.com"])
+CORS(app)  # Allow all origins for debugging CORS issues
 
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
