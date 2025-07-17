@@ -43,7 +43,8 @@ def openrouter_query(prompt):
 
 @app.route('/api/gemini/analyze', methods=['POST'])
 def analyze():
-    events = request.json.get('events', [])
+    data = request.get_json() or {}
+    events = data.get('events', [])
     if not events:
         return jsonify({'result': 'No events to analyze. Please add some events first.'})
     prompt = f"""As an energy consultant, analyze these recent events from a chemical energy facility dashboard:\n\nEVENTS DATA:\n{events}\n\nPlease provide a comprehensive analysis including:\n1. Risk assessment and severity levels\n2. Operational trends and patterns\n3. Compliance implications\n4. Recommended immediate actions\n5. Long-term strategic recommendations\n\nFocus on actionable insights that would help facility managers make informed decisions. Be specific about risks, costs, and compliance impacts."""
@@ -54,16 +55,18 @@ def analyze():
 def report():
     if request.method == 'OPTIONS':
         return '', 204
-    events = request.json.get('events', [])
-    compliance = request.json.get('compliance')
-    cost = request.json.get('cost')
+    data = request.get_json() or {}
+    events = data.get('events', [])
+    compliance = data.get('compliance')
+    cost = data.get('cost')
     prompt = f"""Generate a professional compliance and cost analysis report for a chemical energy facility:\n\nFACILITY DATA:\n- Compliance Rate: {compliance}%\n- Current Cost: ${cost}M\n- Recent Events: {events}\n\nPlease provide:\n1. Executive Summary\n2. Compliance Analysis (trends, gaps, recommendations)\n3. Cost Analysis (budget vs actual, efficiency metrics)\n4. Risk Assessment\n5. Action Items and Timeline\n6. Regulatory Compliance Status\n\nFormat as a professional report with clear sections and actionable recommendations."""
     result = openrouter_query(prompt)
     return jsonify({'result': result})
 
 @app.route('/api/gemini/predict', methods=['POST'])
 def predict():
-    assets = request.json.get('assets', [])
+    data = request.get_json() or {}
+    assets = data.get('assets', [])
     if not assets:
         return jsonify({'result': 'No assets to analyze. Please check asset data.'})
     prompt = f"""As a fictive maintenance AI specialist, analyze these energy facility assets:\n\nASSETS DATA:\n{assets}\n\nPlease provide:\n1. Asset Health Assessment (for each asset)\n2. Failure Risk Predictions (probability and timeline)\n3. Maintenance Priority Ranking\n4. Recommended Maintenance Schedule\n5. Cost-Benefit Analysis of Preventive vs Reactive Maintenance\n6. Resource Allocation Recommendations\n7. Asset Protection Strategies\n\nInclude specific timelines, risk scores, and cost estimates where possible. Focus on preventing costly failures and optimizing maintenance budgets."""
@@ -73,7 +76,7 @@ def predict():
 @app.route('/api/gemini/photo-analysis', methods=['POST'])
 def photo_analysis():
     try:
-        data = request.json
+        data = request.get_json() or {}
         image_data = data.get('image')  # Base64 encoded image
         asset_context = data.get('assets', [])
         if not image_data:
@@ -88,10 +91,11 @@ def photo_analysis():
 
 @app.route('/api/gemini/pdf-content', methods=['POST'])
 def pdf_content():
-    events = request.json.get('events', [])
-    compliance = request.json.get('compliance')
-    cost = request.json.get('cost')
-    assets = request.json.get('assets', [])
+    data = request.get_json() or {}
+    events = data.get('events', [])
+    compliance = data.get('compliance')
+    cost = data.get('cost')
+    assets = data.get('assets', [])
     prompt = f"""Generate comprehensive content for a professional compliance report PDF for a chemical energy facility.\n\nFACILITY DATA:\n- Compliance Rate: {compliance}%\n- Current Cost: ${cost}M\n- Recent Events: {events}\n- Assets: {assets}\n\nPlease provide a structured report with the following sections:\n\n1. EXECUTIVE SUMMARY\n   - Key findings and recommendations\n   - Overall facility status\n\n2. COMPLIANCE ANALYSIS\n   - Current compliance status\n   - Regulatory requirements met/missed\n   - Compliance trends and gaps\n   - Risk assessment\n\n3. OPERATIONAL PERFORMANCE\n   - Asset health overview\n   - Event analysis and patterns\n   - Performance metrics\n4. COST ANALYSIS\n   - Budget vs actual spending\n   - Cost efficiency metrics\n   - ROI on maintenance activities\n\n5. RISK ASSESSMENT\n   - Identified risks and severity\n   - Mitigation strategies\n   - Priority actions\n\n6. RECOMMENDATIONS\n   - Immediate actions (next 30s)\n   - Short-term improvements (3-6 months)\n   - Long-term strategic initiatives\n\n7. APPENDICES\n   - Detailed asset status\n   - Event timeline\n   - Compliance checklist\n\nFormat this as a professional report suitable for regulatory submission and executive review."""
     result = openrouter_query(prompt)
     return jsonify({'result': result})
