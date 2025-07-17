@@ -84,8 +84,10 @@ Focus on actionable insights that would help facility managers make informed dec
     result = gemini_query(prompt)
     return jsonify({'result': result})
 
-@app.route('/api/gemini/report', methods=['POST'])
+@app.route('/api/gemini/report', methods=['POST', 'OPTIONS'])
 def report():
+    if request.method == 'OPTIONS':
+        return '', 204
     events = request.json.get('events', [])
     compliance = request.json.get('compliance')
     cost = request.json.get('cost')
