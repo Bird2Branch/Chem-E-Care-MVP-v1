@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (aiButtons[0]) aiButtons[0].onclick = async function() {
     document.getElementById('ai-results').innerHTML = '<em>Analyzing recent events...</em>';
     try {
-      const res = await fetch('/api/gemini/analyze', {
+      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ events: ChemEDashboard.events })
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (aiButtons[1]) aiButtons[1].onclick = async function() {
     document.getElementById('ai-results').innerHTML = '<em>Generating AI report...</em>';
     try {
-      const res = await fetch('/api/gemini/report', {
+      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (aiButtons[2]) aiButtons[2].onclick = async function() {
     document.getElementById('ai-results').innerHTML = '<em>Predicting maintenance needs...</em>';
     try {
-      const res = await fetch('/api/gemini/predict', {
+      const res = await fetch('https://chem-e-care.onrender.com/api/gemini/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assets: ChemEDashboard.assets })
@@ -351,7 +351,7 @@ const ChemEDashboard = {
         
         try {
           // Send image to AI for analysis
-          const res = await fetch('https://your-app-name.onrender.com/api/gemini/photo-analysis', {
+          const res = await fetch('https://chem-e-care.onrender.com/api/gemini/photo-analysis', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -387,7 +387,7 @@ const ChemEDashboard = {
       // Get AI-generated content first
       let aiContent = '';
       try {
-        const res = await fetch('https://your-app-name.onrender.com/api/gemini/pdf-content', {
+        const res = await fetch('https://chem-e-care.onrender.com/api/gemini/pdf-content', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
