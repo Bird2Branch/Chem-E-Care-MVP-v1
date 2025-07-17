@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>Chem-E-Care Unified Dashboard</h1>
+    <h1 class="site-title">Chem-E-Care</h1>
   </header>
   <div class="dashboard-layout">
     <nav id="sidebar" aria-label="Sidebar Navigation" class="open">
@@ -16,6 +16,7 @@
         <button id="sidebar-toggle" aria-label="Toggle Sidebar" aria-expanded="true">☰</button>
       </div>
       <ul>
+        <li><button class="tab-btn" data-tab="home">Home</button></li>
         <li><button class="tab-btn active" data-tab="entry-points">Entry Points</button></li>
         <li><button class="tab-btn" data-tab="orchestrator">Orchestrator</button></li>
         <li><button class="tab-btn" data-tab="alert-matrix">Alert Matrix</button></li>
@@ -26,6 +27,20 @@
       </ul>
     </nav>
     <main id="tab-content">
+      <section id="home" class="tab-section">
+        <div class="sketch-layout">
+          <aside class="sketch-sidebar">
+            <!-- (empty) -->
+          </aside>
+          <main class="sketch-main">
+            <img src="logo.png" alt="bird2branch logo" class="sketch-logo" />
+            <div class="sketch-card">
+              <div class="sketch-body-text">body text</div>
+              <button class="sketch-get-started">get started</button>
+            </div>
+          </main>
+        </div>
+      </section>
       <section id="entry-points" class="tab-section active">
         <h2>Unified Entry Points</h2>
         <form id="event-form" aria-label="Add Event">
@@ -104,32 +119,42 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
   <script>
-    // Tab switching logic
-    document.addEventListener('DOMContentLoaded', function() {
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      const tabSections = document.querySelectorAll('.tab-section');
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Remove active from all
-          tabBtns.forEach(b => b.classList.remove('active'));
-          tabSections.forEach(sec => sec.classList.remove('active'));
-          // Add active to selected
-          btn.classList.add('active');
-          const tab = btn.getAttribute('data-tab');
-          document.getElementById(tab).classList.add('active');
-        });
-      });
-      // Sidebar toggle logic
-      const sidebar = document.getElementById('sidebar');
-      const layout = document.querySelector('.dashboard-layout');
-      const toggleBtn = document.getElementById('sidebar-toggle');
-      toggleBtn.addEventListener('click', function() {
-        sidebar.classList.toggle('closed');
-        layout.classList.toggle('sidebar-closed');
-        const isOpen = !sidebar.classList.contains('closed');
-        toggleBtn.setAttribute('aria-expanded', isOpen);
-      });
+// Tab switching logic (fixed for Home tab)
+document.addEventListener('DOMContentLoaded', function() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabSections = document.querySelectorAll('.tab-section');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remove active from all
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabSections.forEach(sec => sec.classList.remove('active'));
+      // Add active to selected
+      btn.classList.add('active');
+      const tab = btn.getAttribute('data-tab');
+      document.getElementById(tab).classList.add('active');
     });
-  </script>
+  });
+  // Show Entry Points tab by default
+  document.querySelector('.tab-btn[data-tab="entry-points"]').classList.add('active');
+  document.getElementById('entry-points').classList.add('active');
+  // Link get started button to Entry Points tab
+  const getStartedBtn = document.querySelector('.sketch-get-started');
+  if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', function() {
+      document.querySelector('.tab-btn[data-tab="entry-points"]').click();
+    });
+  }
+  // Sidebar toggle logic
+  const sidebar = document.getElementById('sidebar');
+  const layout = document.querySelector('.dashboard-layout');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  toggleBtn.addEventListener('click', function() {
+    sidebar.classList.toggle('closed');
+    layout.classList.toggle('sidebar-closed');
+    const isOpen = !sidebar.classList.contains('closed');
+    toggleBtn.setAttribute('aria-expanded', isOpen);
+  });
+});
+</script>
 </body>
 </html>
