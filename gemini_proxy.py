@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, make_response
 import requests
 from flask_cors import CORS
 from dotenv import load_dotenv
+import time
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -27,7 +28,11 @@ def openrouter_query(prompt):
             {'role': 'user', 'content': prompt}
         ]
     }
+    print("Calling OpenRouter API from openrouter_query...")
+    start = time.time()
     resp = requests.post(OPENROUTER_API_URL, headers=headers, json=data, timeout=15)
+    elapsed = time.time() - start
+    print(f"OpenRouter API call finished in {elapsed:.2f} seconds with status {resp.status_code}")
     if resp.status_code == 200:
         try:
             return resp.json()['choices'][0]['message']['content']
@@ -98,12 +103,16 @@ def proxy():
     if not api_key:
         return jsonify({'error': 'API key not set in environment'}), 500
     try:
+        print("Calling OpenRouter API from /api/proxy route...")
+        start = time.time()
         response = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
             json=data,
             headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
             timeout=15
         )
+        elapsed = time.time() - start
+        print(f"OpenRouter API call (proxy) finished in {elapsed:.2f} seconds with status {response.status_code}")
         response.raise_for_status()
         return jsonify(response.json())
     except requests.RequestException as e:
