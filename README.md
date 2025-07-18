@@ -5,6 +5,10 @@ A unified chemical energy facility and workflow management system with AI-powere
 # Open Application
    Open your browser and visit [azzy-chemE.github.io/chem-E-care-MVP-v1/](https://azzy-cheme.github.io/chem-E-care-MVP-v1/)
 
+## Current Status
+
+Google Gemini 2.5 AI Python file doesn't work on Github because of a lack of support for backend code. We'll be making the transition to Streamlit in the next couple of days.
+
 ## Features
 
 - **Unified Dashboard**: All-in-one view of facility operations
