@@ -2,7 +2,7 @@
 
 A unified chemical energy facility and workflow management system with AI-powered insights. Founded by an aspiring chemical engineer (and 3 hard-working developers interested in Mech. Eng., Computer Eng., and Electrical Eng.) — for chemical engineers :)
 
-# Access the current state of the application:
+# Open Application
    Open your browser and visit [azzy-chemE.github.io/chem-E-care-MVP-v1/](https://azzy-cheme.github.io/chem-E-care-MVP-v1/)
 
 ## Features
