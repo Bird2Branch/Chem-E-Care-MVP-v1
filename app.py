@@ -58,6 +58,10 @@ def static_files(filename):
 def home():
     return render_template_string(get_html_content('Home.html'))
 
+@app.route('/index.html')
+def index_redirect():
+    return render_template_string(get_html_content('Home.html'))
+
 @app.route('/dashboard')
 def dashboard():
     return render_template_string(get_html_content('Dashboard.html'))
