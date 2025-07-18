@@ -145,7 +145,7 @@ def photo_analysis():
             return jsonify({'error': 'No image data provided'})
         if image_data.startswith('data:image'):
             image_data = image_data.split(',')[1]
-        prompt = f"""Analyze this inspection photo from a chemical energy facility and provide intelligent tagging and analysis.\n\nASSET CONTEXT:\n{asset_context}\n\nPlease provide:\n1. Asset Identification\n2. Visual Inspection Findings\n3. Potential Issues or Concerns\n4. Compliance Implications\n5. Recommended Actions\n6. Risk Assessment\n7. Maintenance Recommendations\n\nBe specific about what you observe and provide actionable insights for facility management.\n\n[NOTE: The image is base64-encoded and not directly viewable by OpenRouter, so answer based on the context provided above.]"""
+        prompt = f"""Analyze this inspection photo from a chemical energy facility and provide intelligent tagging and analysis.\n\nASSET CONTEXT:\n{asset_context}\n\nPlease provide:\n1. Asset Identification\n2. Visual Inspection Findings\n3. Potential Issues or Concerns\n4. Compliance Implications\n5. Recommended Actions\n6. Risk Assessment\n7. Maintenance Recommendations\n\nBe specific about what you observe and provide actionable insights for facility management.\n\n[NOTE: The image is base64-encoded and not directly viewable by the AI model, so answer based on the context provided above.]"""
         result = gemini_query(prompt)
         return jsonify({'result': result})
     except Exception as e:
