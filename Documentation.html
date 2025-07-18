@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chem-E-Care | Documentation</title>
+  <link rel="stylesheet" href="Styles/styles.css">
+</head>
+<body>
+  <header>
+    <h1 class="site-title">Chem-E-Care</h1>
+  </header>
+  <div class="dashboard-layout">
+    <nav id="sidebar" aria-label="Sidebar Navigation" class="open">
+      <div class="sidebar-toggle-container">
+        <button id="sidebar-toggle" aria-label="Toggle Sidebar" aria-expanded="true">☰</button>
+      </div>
+      <ul>
+        <li><a class="tab-btn" href="/">Home</a></li>
+        <li><a class="tab-btn" href="/entry-points">Entry Points</a></li>
+        <li><a class="tab-btn" href="/orchestrator">Orchestrator</a></li>
+        <li><a class="tab-btn" href="/alert-matrix">Alert Matrix</a></li>
+        <li><a class="tab-btn" href="/dashboard">Dashboard</a></li>
+        <li><a class="tab-btn active" href="/documentation">Documentation</a></li>
+        <li><a class="tab-btn" href="/ai-analysis">AI Analysis</a></li>
+        <li><a class="tab-btn" href="/benefits">Benefits</a></li>
+      </ul>
+    </nav>
+    <main id="tab-content">
+      <section>
+        <h2>Automated Documentation & Reporting</h2>
+        <form id="doc-upload-form" enctype="multipart/form-data">
+          <label for="doc-photo">Upload Inspection Photo:</label>
+          <input id="doc-photo" type="file" accept="image/*" />
+          <button type="submit">Auto-Tag & Attach</button>
+        </form>
+        <div id="doc-preview"></div>
+        <button id="generate-report">Generate Compliance Report</button>
+        <div id="documentation-panel"></div>
+        <div id="monthly-review-log"></div>
+      </section>
+    </main>
+  </div>
+  <footer>
+    <p>&copy; 2025 Chem-E-Care</p>
+  </footer>
+  <script src="app.js"></script>
+  <script>
+    // Sidebar toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const layout = document.querySelector('.dashboard-layout');
+      const toggleBtn = document.getElementById('sidebar-toggle');
+      
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          sidebar.classList.toggle('closed');
+          layout.classList.toggle('sidebar-closed');
+          const isOpen = !sidebar.classList.contains('closed');
+          toggleBtn.setAttribute('aria-expanded', isOpen);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

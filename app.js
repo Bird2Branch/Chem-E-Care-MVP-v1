@@ -45,19 +45,34 @@ const ChemEDashboard = {
     'Training Lapse': { class: 'alert-training', timing: 86400, auto: 'Auto-assign micro-course', urgency: 86400 }
   },
   init() {
-    this.renderEventForm();
-    this.renderEventLog();
-    this.renderOrchestratorLog();
-    this.renderAlertMatrix();
-    this.renderDashboard();
-    this.renderDocumentation();
-    this.renderBenefitsTable();
+    // Only initialize functions for elements that exist on the current page
+    if (document.getElementById('event-form')) {
+      this.renderEventForm();
+      this.renderEventLog();
+    }
+    if (document.getElementById('orchestrator-log')) {
+      this.renderOrchestratorLog();
+    }
+    if (document.getElementById('alert-list')) {
+      this.renderAlertMatrix();
+    }
+    if (document.querySelector('.dashboard-panels')) {
+      this.renderDashboard();
+    }
+    if (document.getElementById('doc-upload-form')) {
+      this.renderDocumentation();
+    }
+    if (document.getElementById('benefits-table')) {
+      this.renderBenefitsTable();
+    }
+    if (document.getElementById('analyze-events') || document.getElementById('generate-ai-report') || document.getElementById('predict-maintenance')) {
+      this.setupAIButtons();
+    }
     this.setupModals();
     this.setupToasts();
-    this.setupAIButtons(); // Add AI button setup here
   },
   setupAIButtons() {
-    // AI button logic (calls backend proxy)
+    // AI button logic (calls local backend with DeepSeek AI)
     const aiButtons = [
       document.getElementById('analyze-events'),
       document.getElementById('generate-ai-report'),
@@ -70,7 +85,7 @@ const ChemEDashboard = {
     function setAiConfigured(configured) {
       const aiStatusText = document.getElementById('ai-status-text');
       if (configured) {
-        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Ready';
+        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Ready (DeepSeek)';
         aiButtons.forEach(btn => {
           if (btn) btn.disabled = false;
         });
@@ -82,56 +97,58 @@ const ChemEDashboard = {
       }
     }
 
-    setAiConfigured(true); // Always enabled if backend is present
+    setAiConfigured(true); // Always enabled with local backend
 
     if (aiButtons[0]) aiButtons[0].onclick = async function() {
       console.log('Analyze events clicked');
       const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events...</em>';
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/analyze', {
+        const res = await fetch('/api/gemini/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events })
         });
         const data = await res.json();
-        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
         console.error('AI Error:', e);
       }
     };
+
     if (aiButtons[1]) aiButtons[1].onclick = async function() {
       console.log('Generate AI report clicked');
       const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report...</em>';
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/report', {
+        const res = await fetch('/api/gemini/report', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
         });
         const data = await res.json();
-        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
         console.error('AI Error:', e);
       }
     };
+
     if (aiButtons[2]) aiButtons[2].onclick = async function() {
       console.log('Predict maintenance clicked');
       const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs...</em>';
+      if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/predict', {
+        const res = await fetch('/api/gemini/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assets: ChemEDashboard.assets })
         });
         const data = await res.json();
-        if (resultsDiv) resultsDiv.textContent = data.result || 'No result.';
+        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.textContent = 'Error contacting AI backend.';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
         console.error('AI Error:', e);
       }
     };
@@ -139,6 +156,8 @@ const ChemEDashboard = {
   // --- Entry Points ---
   renderEventForm() {
     const form = document.getElementById('event-form');
+    if (!form) return; // Exit if form doesn't exist
+    
     form.onsubmit = (e) => {
       e.preventDefault();
       const type = document.getElementById('event-type').value;
@@ -159,6 +178,8 @@ const ChemEDashboard = {
   },
   renderEventLog() {
     const log = document.getElementById('event-log');
+    if (!log) return; // Exit if log doesn't exist
+    
     log.innerHTML = this.events.length === 0 ? '<em>No events yet.</em>' :
       this.events.slice(0, 10).map(ev =>
         `<div class="event"><strong>${ev.type}</strong> - ${ev.details} <span style="color:#888;font-size:0.9em;">(${this.timeAgo(ev.time)})</span><br><span>Status: ${ev.status}</span></div>`
@@ -167,6 +188,8 @@ const ChemEDashboard = {
   // --- Orchestrator ---
   renderOrchestratorLog() {
     const log = document.getElementById('orchestrator-log');
+    if (!log) return; // Exit if log doesn't exist
+    
     log.innerHTML = this.orchestratorLog.length === 0 ? '<em>No orchestrator decisions yet.</em>' :
       this.orchestratorLog.slice(0, 10).map(entry =>
         `<div class="orchestrator-entry"><strong>${entry.event.type}</strong> - ${entry.event.details}<br>
@@ -228,7 +251,8 @@ const ChemEDashboard = {
   },
   renderAlertMatrix() {
     const list = document.getElementById('alert-list');
-    if (!list) return;
+    if (!list) return; // Exit if list doesn't exist
+    
     list.innerHTML = this.alerts.filter(a => !a.dismissed).slice(0, 5).map(a =>
       `<div class="alert ${a.class}" tabindex="0" aria-label="${a.type}" data-id="${a.id}">
         <span><strong>${a.type}</strong> &mdash; ${a.auto}</span>
@@ -267,6 +291,7 @@ const ChemEDashboard = {
   renderDashboard() {
     // Asset Map
     const assetMap = document.getElementById('asset-map');
+    if (!assetMap) return; // Exit if assetMap doesn't exist
     assetMap.innerHTML = `<h3>Live Asset Map</h3><svg width="100%" height="80" viewBox="0 0 300 80">${this.assets.map((a,i) =>
       `<circle cx="${50+i*100}" cy="40" r="25" fill="${a.status==='Healthy'?'#52c41a':a.status==='At Risk'?'#faad14':'#ff4d4f'}" data-asset="${a.id}" style="cursor:pointer;" tabindex="0" />
       <text x="${50+i*100}" y="80" text-anchor="middle" font-size="12">${a.name}</text>`).join('')}</svg><p>Click asset for details.</p>`;
@@ -276,6 +301,7 @@ const ChemEDashboard = {
     });
     // Compliance Gauge
     const gauge = document.getElementById('compliance-gauge');
+    if (!gauge) return; // Exit if gauge doesn't exist
     gauge.innerHTML = `<h3>Compliance Gauge</h3><div style="height:60px;display:flex;align-items:center;">
       <div style="width:80%;background:#e6f7ff;border-radius:8px;overflow:hidden;">
         <div id="gauge-bar" style="width:${this.compliance}%;background:#52c41a;height:24px;transition:width 0.7s;"></div>
@@ -284,6 +310,7 @@ const ChemEDashboard = {
     </div><p>Real-time compliance history</p>`;
     // Cost Dial
     const costDial = document.getElementById('cost-dial');
+    if (!costDial) return; // Exit if costDial doesn't exist
     costDial.innerHTML = `<h3>Cost vs. Budget</h3><svg width="100" height="60">
       <circle cx="50" cy="50" r="40" fill="#f0f0f0" />
       <path id="cost-arc" d="${this.describeArc(50,50,40,0,Math.min(360,this.cost/2*360))}" fill="#faad14" />
@@ -296,10 +323,12 @@ const ChemEDashboard = {
     };
     // Training Status
     const training = document.getElementById('training-status');
+    if (!training) return; // Exit if training doesn't exist
     training.innerHTML = `<h3>Training Status</h3><ul>${this.training.map((t,i) =>
       `<li>${t.name} - <span style="color:${t.status==='Complete'?'#52c41a':t.status==='Expiring'?'#faad14':'#ff4d4f'}">${t.status}</span> (expires: ${t.expires}) <button class="btn" style="font-size:0.9em;" onclick="ChemEDashboard.toggleTraining(${i})">Toggle</button></li>`).join('')}</ul>`;
     // AI Insights
     const ai = document.getElementById('ai-insights');
+    if (!ai) return; // Exit if ai doesn't exist
     ai.innerHTML = `<h3>AI Insights</h3><ol>${this.aiInsights.map(i=>`<li>${i}</li>`).join('')}</ol><p><em>From monthly review</em></p><button class="btn" id="regen-insights">Regenerate Insights</button>`;
     document.getElementById('regen-insights').onclick = () => {
       this.aiInsights = this.generateInsights();
@@ -356,7 +385,9 @@ const ChemEDashboard = {
   // --- Documentation & Reporting ---
   renderDocumentation() {
     const form = document.getElementById('doc-upload-form');
+    if (!form) return; // Exit if form doesn't exist
     const preview = document.getElementById('doc-preview');
+    if (!preview) return; // Exit if preview doesn't exist
     form.onsubmit = async (e) => {
       e.preventDefault();
       const file = document.getElementById('doc-photo').files[0];
@@ -503,7 +534,9 @@ const ChemEDashboard = {
   // --- Benefits Table ---
   renderBenefitsTable() {
     const info = this.benefitsInfo;
-    document.getElementById('benefits-table').innerHTML = `
+    const table = document.getElementById('benefits-table');
+    if (!table) return; // Exit if table doesn't exist
+    table.innerHTML = `
       <table>
         <tr><th>Area</th><th>Legacy Workflow</th><th>New Workflow</th></tr>
         <tr><td>Dashboards <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Dashboards']}</span></span></td><td>5+ separate</td><td>1 unified</td></tr>

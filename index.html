@@ -120,20 +120,20 @@
   <script src="app.js"></script>
   <script>
 // Tab switching logic (fixed for Home tab)
-document.addEventListener('DOMContentLoaded', function() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabSections = document.querySelectorAll('.tab-section');
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      // Remove active from all
-      tabBtns.forEach(b => b.classList.remove('active'));
-      tabSections.forEach(sec => sec.classList.remove('active'));
-      // Add active to selected
-      btn.classList.add('active');
-      const tab = btn.getAttribute('data-tab');
-      document.getElementById(tab).classList.add('active');
-    });
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabSections = document.querySelectorAll('.tab-section');
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Remove active from all
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabSections.forEach(sec => sec.classList.remove('active'));
+          // Add active to selected
+          btn.classList.add('active');
+          const tab = btn.getAttribute('data-tab');
+          document.getElementById(tab).classList.add('active');
+        });
+      });
   // Show Entry Points tab by default
   document.querySelector('.tab-btn[data-tab="entry-points"]').classList.add('active');
   document.getElementById('entry-points').classList.add('active');
@@ -144,17 +144,17 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelector('.tab-btn[data-tab="entry-points"]').click();
     });
   }
-  // Sidebar toggle logic
-  const sidebar = document.getElementById('sidebar');
-  const layout = document.querySelector('.dashboard-layout');
-  const toggleBtn = document.getElementById('sidebar-toggle');
-  toggleBtn.addEventListener('click', function() {
-    sidebar.classList.toggle('closed');
-    layout.classList.toggle('sidebar-closed');
-    const isOpen = !sidebar.classList.contains('closed');
-    toggleBtn.setAttribute('aria-expanded', isOpen);
-  });
-});
-</script>
+      // Sidebar toggle logic
+      const sidebar = document.getElementById('sidebar');
+      const layout = document.querySelector('.dashboard-layout');
+      const toggleBtn = document.getElementById('sidebar-toggle');
+      toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('closed');
+        layout.classList.toggle('sidebar-closed');
+        const isOpen = !sidebar.classList.contains('closed');
+        toggleBtn.setAttribute('aria-expanded', isOpen);
+      });
+    });
+  </script>
 </body>
 </html>
