@@ -47,23 +47,23 @@ const ChemEDashboard = {
   init() {
     // Only initialize functions for elements that exist on the current page
     if (document.getElementById('event-form')) {
-      this.renderEventForm();
-      this.renderEventLog();
+    this.renderEventForm();
+    this.renderEventLog();
     }
     if (document.getElementById('orchestrator-log')) {
-      this.renderOrchestratorLog();
+    this.renderOrchestratorLog();
     }
     if (document.getElementById('alert-list')) {
-      this.renderAlertMatrix();
+    this.renderAlertMatrix();
     }
     if (document.querySelector('.dashboard-panels')) {
-      this.renderDashboard();
+    this.renderDashboard();
     }
     if (document.getElementById('doc-upload-form')) {
-      this.renderDocumentation();
+    this.renderDocumentation();
     }
     if (document.getElementById('benefits-table')) {
-      this.renderBenefitsTable();
+    this.renderBenefitsTable();
     }
     if (document.getElementById('analyze-events') || document.getElementById('generate-ai-report') || document.getElementById('predict-maintenance')) {
       this.setupAIButtons();
