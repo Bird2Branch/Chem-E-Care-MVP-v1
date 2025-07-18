@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)  # Allow all origins for debugging CORS issues
 
 # Set API key directly (bypass .env file issues)
-OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY') or "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"
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 print(f"API Key configured: {'Yes' if OPENROUTER_API_KEY else 'No'}")
