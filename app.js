@@ -104,7 +104,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events with DeepSeek AI...</em>';
       try {
-        const res = await fetch('/api/gemini/analyze', {
+        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events })
@@ -112,7 +112,7 @@ const ChemEDashboard = {
         const data = await res.json();
         if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
         console.error('AI Error:', e);
       }
     };
@@ -122,7 +122,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report with DeepSeek AI...</em>';
       try {
-        const res = await fetch('/api/gemini/report', {
+        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/report', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
@@ -130,7 +130,7 @@ const ChemEDashboard = {
         const data = await res.json();
         if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
         console.error('AI Error:', e);
       }
     };
@@ -140,7 +140,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs with DeepSeek AI...</em>';
       try {
-        const res = await fetch('/api/gemini/predict', {
+        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assets: ChemEDashboard.assets })
@@ -148,7 +148,7 @@ const ChemEDashboard = {
         const data = await res.json();
         if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
       } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: Make sure the Flask server is running (python app.py)</em>';
+        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
         console.error('AI Error:', e);
       }
     };
