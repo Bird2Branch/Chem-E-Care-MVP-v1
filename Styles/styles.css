@@ -22,7 +22,8 @@ header, footer {
   text-shadow: 0 2px 8px #33474a33;
   line-height: 1.1;
   letter-spacing: 0.01em;
-  text-align: center;
+  text-align: left;
+  margin-left: 2rem;
 }
 main {
   max-width: 1200px;
@@ -345,7 +346,9 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.2rem;
 }
 .tab-btn {
-  width: 100%;
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
   background: none;
   border: none;
   color: #f7fafc;
@@ -433,9 +436,10 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
   padding: 10px 1rem 1rem 1rem;
+  margin-left: 12.5rem;
 }
 .sketch-logo {
   width: 160px;
@@ -448,6 +452,7 @@ h1, h2, h3, h4, h5, h6 {
   display: block;
   box-shadow: 0 2px 8px #a0bbbf;
   padding: 0.5rem;
+  margin-left: 10rem;
 }
 .sketch-card {
   background: #dfffff;
@@ -460,6 +465,7 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   align-items: center;
   margin-top: 0.2rem;
+  margin-left: 9px;
 }
 .sketch-body-text {
   color: #33474a;
