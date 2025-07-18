@@ -104,7 +104,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/analyze', {
+        const res = await fetch('/api/gemini/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events })
@@ -122,7 +122,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/report', {
+        const res = await fetch('/api/gemini/report', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
@@ -140,7 +140,7 @@ const ChemEDashboard = {
       const resultsDiv = document.getElementById('ai-results');
       if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs with DeepSeek AI...</em>';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/predict', {
+        const res = await fetch('/api/gemini/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ assets: ChemEDashboard.assets })
@@ -400,7 +400,7 @@ const ChemEDashboard = {
         
         try {
           // Send image to AI for analysis
-          const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/photo-analysis', {
+          const res = await fetch('/api/gemini/photo-analysis', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -436,7 +436,7 @@ const ChemEDashboard = {
       // Get AI-generated content first
       let aiContent = '';
       try {
-        const res = await fetch('https://chem-e-care-backend.onrender.com/api/gemini/pdf-content', {
+        const res = await fetch('/api/gemini/pdf-content', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 

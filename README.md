@@ -9,8 +9,8 @@ A unified chemical energy facility management system with AI-powered insights.
    pip install -r requirements.txt
    ```
 
-2. **Set up environment variables (optional):**
-   For real AI responses, you can set up your OpenRouter API key:
+2. **Set up environment variables:**
+   For real AI responses, you must set up your OpenRouter API key:
    
    **Option A: Use the setup script (recommended):**
    ```bash
@@ -22,12 +22,12 @@ A unified chemical energy facility management system with AI-powered insights.
    ```
    OPENROUTER_API_KEY=your_api_key_here
    ```
-   
-   **Note:** The app will work without an API key, but AI features will show mock responses.
+
+   **Note:** The app will work without an API key, but AI features will show mock responses or errors.
 
 3. **Run the application:**
    ```bash
-   python app.py
+   python gemini_proxy.py
    ```
 
 4. **Access the application:**
@@ -36,7 +36,7 @@ A unified chemical energy facility management system with AI-powered insights.
 ## Features
 
 - **Unified Dashboard**: All-in-one view of facility operations
-- **AI Analysis**: DeepSeek AI-powered insights and predictions
+- **AI Analysis**: OpenRouter AI-powered insights and predictions
 - **Event Management**: Track and orchestrate facility events
 - **Alert System**: Real-time alerts with automated responses
 - **Compliance Tracking**: Monitor regulatory compliance
