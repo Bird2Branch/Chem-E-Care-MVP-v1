@@ -17,6 +17,10 @@ OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 if not OPENROUTER_API_KEY:
     raise RuntimeError('OPENROUTER_API_KEY environment variable not set!')
+else:
+    print("---------------------------------------------------------------------------------")
+    print("API Key Set!")
+    print("---------------------------------------------------------------------------------")
 
 def openrouter_query(prompt):
     headers = {
