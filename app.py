@@ -65,7 +65,7 @@ def analyze():
     events = data.get('events', [])
     if not events:
         return jsonify({'result': 'No events to analyze. Please add some events first.'})
-    prompt = "Hello, Can u tell me what the your model name is and then give me a short haiku about energy."
+    prompt = f"""As an energy consultant, analyze these events:\n\n{events}\n\nGive insights, risk assessment, compliance, and recommendations."""
     result = openrouter_query(prompt)
     if 'error' in result:
         return jsonify({'error': result['error']}), 500
@@ -93,7 +93,7 @@ def predict():
     assets = data.get('assets', [])
     if not assets:
         return jsonify({'result': 'No assets to analyze. Please check asset data.'})
-    prompt = f"""As a fictive maintenance AI specialist, analyze these energy facility assets:\n\nASSETS DATA:\n{assets}\n\nPlease provide:\n1. Asset Health Assessment (for each asset)\n2. Failure Risk Predictions (probability and timeline)\n3. Maintenance Priority Ranking\n4. Recommended Maintenance Schedule\n5. Cost-Benefit Analysis of Preventive vs Reactive Maintenance\n6. Resource Allocation Recommendations\n7. Asset Protection Strategies\n\nInclude specific timelines, risk scores, and cost estimates where possible. Focus on preventing costly failures and optimizing maintenance budgets."""
+    prompt = "Hi ai can u tell me your model name and write a small haiku about energy"
     result = openrouter_query(prompt)
     if 'error' in result:
         return jsonify({'error': result['error']}), 500
