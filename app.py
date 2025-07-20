@@ -65,7 +65,7 @@ def analyze():
     events = data.get('events', [])
     if not events:
         return jsonify({'result': 'No events to analyze. Please add some events first.'})
-    prompt = f"""As an energy consultant, analyze these recent events from a chemical energy facility dashboard:\n\nEVENTS DATA:\n{events}\n\nPlease provide a comprehensive analysis including:\n1. Risk assessment and severity levels\n2. Operational trends and patterns\n3. Compliance implications\n4. Recommended immediate actions\n5. Long-term strategic recommendations\n\nFocus on actionable insights that would help facility managers make informed decisions. Be specific about risks, costs, and compliance impacts."""
+    prompt = f"""First sentence should have the name of the ai model u are.As an energy consultant, analyze these recent events from a chemical energy facility dashboard:\n\nEVENTS DATA:\n{events}\n\nPlease provide a comprehensive analysis including:\n1. Risk assessment and severity levels\n2. Operational trends and patterns\n3. Compliance implications\n4. Recommended immediate actions\n5. Long-term strategic recommendations\n\nFocus on actionable insights that would help facility managers make informed decisions. Be specific about risks, costs, and compliance impacts."""
     result = openrouter_query(prompt)
     if 'error' in result:
         return jsonify({'error': result['error']}), 500
