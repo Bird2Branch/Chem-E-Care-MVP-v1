@@ -28,7 +28,7 @@ def openrouter_query(prompt):
         'Content-Type': 'application/json'
     }
     data = {
-        'model': 'deepseek/deepseek-chat:free',
+        'model': 'qwen/qwen3-30b-a3b:free',
         'messages': [
             {'role': 'user', 'content': prompt}
         ]
