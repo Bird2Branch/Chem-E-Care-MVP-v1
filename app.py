@@ -1,588 +1,160 @@
-// Chem-E-Consultant Dashboard: Fully Interactive & Professional
-// All logic in vanilla JS, no frameworks
+import os
+from flask import Flask, request, jsonify, make_response, send_from_directory
+import requests
+from flask_cors import CORS
+from dotenv import load_dotenv
+import time
 
-document.addEventListener('DOMContentLoaded', () => {
-  ChemEDashboard.init();
-});
+# Load environment variables from .env file (for local development).
+load_dotenv()
 
-const ChemEDashboard = {
-  events: [],
-  orchestratorLog: [],
-  alerts: [],
-  assets: [
-    { id: 1, name: 'Turbine #1', status: 'Healthy', risk: 'Low', trend: '+2%' },
-    { id: 2, name: 'Pipeline A', status: 'At Risk', risk: 'Medium', trend: '-1%' },
-    { id: 3, name: 'Turbine #3', status: 'Critical', risk: 'High', trend: '-5%' }
-  ],
-  compliance: 92,
-  cost: 1.23,
-  costUnit: 'M',
-  training: [
-    { name: 'Alice', status: 'Complete', expires: '2025-01-10' },
-    { name: 'Bob', status: 'Expiring', expires: '2024-07-01' },
-    { name: 'Carlos', status: 'Expired', expires: '2024-04-01' }
-  ],
-  aiInsights: [
-    'Optimize turbine #3 maintenance schedule',
-    'Reduce inspection cycle for pipeline A',
-    'Update training for new EPA rule',
-    'Consolidate vendor onboarding',
-    'Review asset tag rounding policy'
-  ],
-  monthlyReviews: [],
-  benefitsInfo: {
-    'Dashboards': 'Legacy: Multiple dashboards in different systems. New: All-in-one view.',
-    'Decision Gates': 'Legacy: Many manual gates. New: One AI-powered gate.',
-    'Average Alert Routing': 'Legacy: Slow, manual routing. New: Instant, AI-driven.',
-    'Report Prep Time': 'Legacy: Manual, slow. New: Automated, fast.',
-    'Data Silos': 'Legacy: Data scattered. New: Unified cloud hub.'
-  },
-  alertTypes: {
-    'Critical Safety': { class: 'alert-critical', timing: 0, auto: 'Shutdown command issued', urgency: 60 },
-    'Compliance Drift': { class: 'alert-compliance', timing: 3600, auto: 'Draft gap report generated', urgency: 3600 },
-    'Asset Failure Risk': { class: 'alert-asset', timing: 900, auto: 'Maintenance task scheduled', urgency: 900 },
-    'Rounding': { class: 'alert-rounding', timing: 14400, auto: 'Small alert & data adjust', urgency: 14400 },
-    'Training Lapse': { class: 'alert-training', timing: 86400, auto: 'Auto-assign micro-course', urgency: 86400 }
-  },
-  init() {
-    // Only initialize functions for elements that exist on the current page
-    if (document.getElementById('event-form')) {
-    this.renderEventForm();
-    this.renderEventLog();
-    }
-    if (document.getElementById('orchestrator-log')) {
-    this.renderOrchestratorLog();
-    }
-    if (document.getElementById('alert-list')) {
-    this.renderAlertMatrix();
-    }
-    if (document.querySelector('.dashboard-panels')) {
-    this.renderDashboard();
-    }
-    if (document.getElementById('doc-upload-form')) {
-    this.renderDocumentation();
-    }
-    if (document.getElementById('benefits-table')) {
-    this.renderBenefitsTable();
-    }
-    if (document.getElementById('analyze-events') || document.getElementById('generate-ai-report') || document.getElementById('predict-maintenance')) {
-      this.setupAIButtons();
-    }
-    this.setupModals();
-    this.setupToasts();
-  },
-  setupAIButtons() {
-    // AI button logic (calls local backend with DeepSeek AI)
-    const aiButtons = [
-      document.getElementById('analyze-events'),
-      document.getElementById('generate-ai-report'),
-      document.getElementById('predict-maintenance')
-    ];
+app = Flask(__name__)
+CORS(app)  # Allow all origins for debugging CORS issues
 
-    // Debug: Check if buttons exist
-    console.log('AI Buttons found:', aiButtons.map(btn => btn ? 'Found' : 'Not found'));
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+print('DEBUG: OPENROUTER_API_KEY loaded:', OPENROUTER_API_KEY)
+OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-    function setAiConfigured(configured) {
-      const aiStatusText = document.getElementById('ai-status-text');
-      if (configured) {
-        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Ready (DeepSeek)';
-        aiButtons.forEach(btn => {
-          if (btn) btn.disabled = false;
-        });
-      } else {
-        if (aiStatusText) aiStatusText.textContent = 'AI Analysis: Not available';
-        aiButtons.forEach(btn => {
-          if (btn) btn.disabled = true;
-        });
-      }
+if not OPENROUTER_API_KEY:
+    raise RuntimeError('OPENROUTER_API_KEY environment variable not set!')
+else:
+    print("---------------------------------------------------------------------------------")
+    print("API Key Set!")
+    print("---------------------------------------------------------------------------------")
+
+def openrouter_query(prompt):
+    headers = {
+        'Authorization': f'Bearer {OPENROUTER_API_KEY}',
+        'Content-Type': 'application/json'
     }
-
-    setAiConfigured(true); // Always enabled with local backend
-
-    if (aiButtons[0]) aiButtons[0].onclick = async function() {
-      console.log('Analyze events clicked');
-      const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Analyzing recent events with DeepSeek AI...</em>';
-      try {
-        const res = await fetch('/api/gemini/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ events: ChemEDashboard.events })
-        });
-        const data = await res.json();
-        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
-      } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
-        console.error('AI Error:', e);
-      }
-    };
-
-    if (aiButtons[1]) aiButtons[1].onclick = async function() {
-      console.log('Generate AI report clicked');
-      const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Generating AI report with DeepSeek AI...</em>';
-      try {
-        const res = await fetch('/api/gemini/report', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ events: ChemEDashboard.events, compliance: ChemEDashboard.compliance, cost: ChemEDashboard.cost })
-        });
-        const data = await res.json();
-        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
-      } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
-        console.error('AI Error:', e);
-      }
-    };
-
-    if (aiButtons[2]) aiButtons[2].onclick = async function() {
-      console.log('Predict maintenance clicked');
-      const resultsDiv = document.getElementById('ai-results');
-      if (resultsDiv) resultsDiv.innerHTML = '<em>Predicting maintenance needs with DeepSeek AI...</em>';
-      try {
-        const res = await fetch('/api/gemini/predict', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assets: ChemEDashboard.assets })
-        });
-        const data = await res.json();
-        if (resultsDiv) resultsDiv.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit;">${data.result || 'No result.'}</pre>`;
-      } catch (e) {
-        if (resultsDiv) resultsDiv.innerHTML = '<em>Error: AI service temporarily unavailable. Please try again later.</em>';
-        console.error('AI Error:', e);
-      }
-    };
-  },
-  // --- Entry Points ---
-  renderEventForm() {
-    const form = document.getElementById('event-form');
-    if (!form) return; // Exit if form doesn't exist
-    
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const type = document.getElementById('event-type').value;
-      const details = document.getElementById('event-details').value.trim();
-      if (!type || !details) return;
-      const event = {
-        id: Date.now(),
-        type,
-        details,
-        time: new Date(),
-        status: 'Pending'
-      };
-      this.events.unshift(event);
-      this.renderEventLog();
-      this.openOrchestratorModal(event);
-      form.reset();
-    };
-  },
-  renderEventLog() {
-    const log = document.getElementById('event-log');
-    if (!log) return; // Exit if log doesn't exist
-    
-    log.innerHTML = this.events.length === 0 ? '<em>No events yet.</em>' :
-      this.events.slice(0, 10).map(ev =>
-        `<div class="event"><strong>${ev.type}</strong> - ${ev.details} <span style="color:#888;font-size:0.9em;">(${this.timeAgo(ev.time)})</span><br><span>Status: ${ev.status}</span></div>`
-      ).join('');
-  },
-  // --- Orchestrator ---
-  renderOrchestratorLog() {
-    const log = document.getElementById('orchestrator-log');
-    if (!log) return; // Exit if log doesn't exist
-    
-    log.innerHTML = this.orchestratorLog.length === 0 ? '<em>No orchestrator decisions yet.</em>' :
-      this.orchestratorLog.slice(0, 10).map(entry =>
-        `<div class="orchestrator-entry"><strong>${entry.event.type}</strong> - ${entry.event.details}<br>
-        <span>Answers: ${entry.answers.map(a => a ? 'Yes' : 'No').join(', ')}</span><br>
-        <span>Outcome: <span style="color:${entry.color}">${entry.outcome}</span></span></div>`
-      ).join('');
-  },
-  openOrchestratorModal(event) {
-    const questions = [
-      'Safety impact?',
-      'Compliance deviation?',
-      'Asset health risk level?',
-      'Budget variance?',
-      'Training or policy gap?'
-    ];
-    let answers = [false, false, false, false, false];
-    let html = `<h3>Orchestrator Decision</h3><p>Event: <strong>${event.type}</strong> - ${event.details}</p><form id="orchestrator-form">`;
-    questions.forEach((q, i) => {
-      html += `<div style="margin-bottom:0.5em;"><label>${q}</label>
-        <input type="radio" name="q${i}" value="yes" id="q${i}y" required><label for="q${i}y">Yes</label>
-        <input type="radio" name="q${i}" value="no" id="q${i}n"><label for="q${i}n">No</label></div>`;
-    });
-    html += `<button type="submit" class="btn">Submit</button></form>`;
-    this.showModal(html);
-    document.getElementById('orchestrator-form').onsubmit = (e) => {
-      e.preventDefault();
-      answers = questions.map((_, i) => document.querySelector(`input[name='q${i}']:checked`).value === 'yes');
-      let outcome, color, alertType;
-      if (answers[0]) { outcome = 'Escalate'; color = '#ff4d4f'; alertType = 'Critical Safety'; }
-      else if (answers[1] || answers[2]) { outcome = 'Schedule Task'; color = '#faad14'; alertType = answers[2] ? 'Asset Failure Risk' : 'Compliance Drift'; }
-      else { outcome = 'Auto-Resolve'; color = '#52c41a'; alertType = 'Rounding'; }
-      this.orchestratorLog.unshift({ event, answers, outcome, color });
-      event.status = outcome;
-      this.renderOrchestratorLog();
-      this.renderEventLog();
-      this.addAlert(alertType, event);
-      this.showModal(`<h3>Outcome: <span style='color:${color}'>${outcome}</span></h3><p>Event routed as <strong>${outcome}</strong>.</p><button class='btn' id='close-modal-btn'>Close</button>`);
-      document.getElementById('close-modal-btn').onclick = () => this.hideModal();
-      this.showToast(`Event processed: ${outcome}`);
-    };
-  },
-  // --- Alerts ---
-  addAlert(type, event) {
-    const alertDef = this.alertTypes[type];
-    const id = Date.now() + Math.random();
-    const alert = {
-      id,
-      type,
-      class: alertDef.class,
-      auto: alertDef.auto,
-      event,
-      created: Date.now(),
-      urgency: alertDef.urgency,
-      dismissed: false
-    };
-    this.alerts.unshift(alert);
-    this.renderAlertMatrix();
-    this.startAlertTimer(alert);
-  },
-  renderAlertMatrix() {
-    const list = document.getElementById('alert-list');
-    if (!list) return; // Exit if list doesn't exist
-    
-    list.innerHTML = this.alerts.filter(a => !a.dismissed).slice(0, 5).map(a =>
-      `<div class="alert ${a.class}" tabindex="0" aria-label="${a.type}" data-id="${a.id}">
-        <span><strong>${a.type}</strong> &mdash; ${a.auto}</span>
-        <span class="timer" id="timer-${a.id}">${this.formatUrgency(a)}</span>
-        <button class="btn" style="margin-left:1em;" onclick="ChemEDashboard.dismissAlert(${a.id})">Dismiss</button>
-      </div>`
-    ).join('');
-  },
-  startAlertTimer(alert) {
-    if (alert.timer) clearInterval(alert.timer);
-    alert.timer = setInterval(() => {
-      const el = document.getElementById('timer-' + alert.id);
-      if (!el) { clearInterval(alert.timer); return; }
-      alert.urgency--;
-      el.textContent = this.formatUrgency(alert);
-      if (alert.urgency <= 0) {
-        this.dismissAlert(alert.id);
-        this.showToast(`${alert.type} auto-dismissed.`);
-        clearInterval(alert.timer);
-      }
-    }, 1000);
-  },
-  dismissAlert(id) {
-    const alert = this.alerts.find(a => a.id === id);
-    if (alert) {
-      alert.dismissed = true;
-      this.renderAlertMatrix();
+    data = {
+        'model': 'qwen/qwen3-30b-a3b:free',
+        'messages': [
+            {'role': 'user', 'content': prompt}
+        ]
     }
-  },
-  formatUrgency(alert) {
-    if (alert.urgency > 3600) return Math.ceil(alert.urgency/3600) + 'h';
-    if (alert.urgency > 60) return Math.ceil(alert.urgency/60) + 'm';
-    return alert.urgency + 's';
-  },
-  // --- Dashboard ---
-  renderDashboard() {
-    // Asset Map
-    const assetMap = document.getElementById('asset-map');
-    if (!assetMap) return; // Exit if assetMap doesn't exist
-    assetMap.innerHTML = `<h3>Live Asset Map</h3><svg width="100%" height="80" viewBox="0 0 300 80">${this.assets.map((a,i) =>
-      `<circle cx="${50+i*100}" cy="40" r="25" fill="${a.status==='Healthy'?'#52c41a':a.status==='At Risk'?'#faad14':'#ff4d4f'}" data-asset="${a.id}" style="cursor:pointer;" tabindex="0" />
-      <text x="${50+i*100}" y="80" text-anchor="middle" font-size="12">${a.name}</text>`).join('')}</svg><p>Click asset for details.</p>`;
-    assetMap.querySelectorAll('circle').forEach(c => {
-      c.onclick = () => this.openAssetModal(c.getAttribute('data-asset'));
-      c.onkeydown = (e) => { if (e.key==='Enter') this.openAssetModal(c.getAttribute('data-asset')); };
-    });
-    // Compliance Gauge
-    const gauge = document.getElementById('compliance-gauge');
-    if (!gauge) return; // Exit if gauge doesn't exist
-    gauge.innerHTML = `<h3>Compliance Gauge</h3><div style="height:60px;display:flex;align-items:center;">
-      <div style="width:80%;background:#e6f7ff;border-radius:8px;overflow:hidden;">
-        <div id="gauge-bar" style="width:${this.compliance}%;background:#52c41a;height:24px;transition:width 0.7s;"></div>
-      </div>
-      <span style="margin-left:1rem;font-weight:bold;">${this.compliance}%</span>
-    </div><p>Real-time compliance history</p>`;
-    // Cost Dial
-    const costDial = document.getElementById('cost-dial');
-    if (!costDial) return; // Exit if costDial doesn't exist
-    costDial.innerHTML = `<h3>Cost vs. Budget</h3><svg width="100" height="60">
-      <circle cx="50" cy="50" r="40" fill="#f0f0f0" />
-      <path id="cost-arc" d="${this.describeArc(50,50,40,0,Math.min(360,this.cost/2*360))}" fill="#faad14" />
-      <text x="50" y="55" text-anchor="middle" font-size="18" font-weight="bold">$${this.cost.toFixed(2)}${this.costUnit}</text>
-    </svg><p>Auto-rounded to 5 sig figs</p><button class="btn" id="simulate-cost">Simulate Cost Update</button>`;
-    document.getElementById('simulate-cost').onclick = () => {
-      this.cost = +(Math.random()*2+0.5).toFixed(2);
-      this.renderDashboard();
-      this.showToast('Cost updated!');
-    };
-    // Training Status
-    const training = document.getElementById('training-status');
-    if (!training) return; // Exit if training doesn't exist
-    training.innerHTML = `<h3>Training Status</h3><ul>${this.training.map((t,i) =>
-      `<li>${t.name} - <span style="color:${t.status==='Complete'?'#52c41a':t.status==='Expiring'?'#faad14':'#ff4d4f'}">${t.status}</span> (expires: ${t.expires}) <button class="btn" style="font-size:0.9em;" onclick="ChemEDashboard.toggleTraining(${i})">Toggle</button></li>`).join('')}</ul>`;
-    // AI Insights
-    const ai = document.getElementById('ai-insights');
-    if (!ai) return; // Exit if ai doesn't exist
-    ai.innerHTML = `<h3>AI Insights</h3><ol>${this.aiInsights.map(i=>`<li>${i}</li>`).join('')}</ol><p><em>From monthly review</em></p><button class="btn" id="regen-insights">Regenerate Insights</button>`;
-    document.getElementById('regen-insights').onclick = () => {
-      this.aiInsights = this.generateInsights();
-      this.renderDashboard();
-      this.showToast('AI Insights regenerated!');
-      this.addMonthlyReview();
-    };
-  },
-  openAssetModal(assetId) {
-    const asset = this.assets.find(a => a.id == assetId);
-    if (!asset) return;
-    this.showModal(`<h3>${asset.name}</h3><p>Status: <strong>${asset.status}</strong></p><p>Risk: <strong>${asset.risk}</strong></p><p>Weekly trend: <strong>${asset.trend}</strong></p><button class='btn' id='close-modal-btn'>Close</button>`);
-    document.getElementById('close-modal-btn').onclick = () => this.hideModal();
-  },
-  toggleTraining(i) {
-    const t = this.training[i];
-    if (t.status === 'Complete') t.status = 'Expiring';
-    else if (t.status === 'Expiring') t.status = 'Expired';
-    else t.status = 'Complete';
-    this.renderDashboard();
-    this.showToast('Training status updated!');
-  },
-  generateInsights() {
-    const pool = [
-      'Optimize turbine #3 maintenance schedule',
-      'Reduce inspection cycle for pipeline A',
-      'Update training for new EPA rule',
-      'Consolidate vendor onboarding',
-      'Review asset tag rounding policy',
-      'Increase compliance audit frequency',
-      'Automate cost reporting',
-      'Upgrade IoT sensor firmware',
-      'Expand micro-course library',
-      'Integrate new regulatory feed'
-    ];
-    return Array.from({length:5},()=>pool[Math.floor(Math.random()*pool.length)]);
-  },
-  describeArc(cx, cy, r, startAngle, endAngle) {
-    // SVG arc for cost dial
-    const start = this.polarToCartesian(cx, cy, r, endAngle);
-    const end = this.polarToCartesian(cx, cy, r, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
-    return [
-      'M', cx, cy,
-      'L', start.x, start.y,
-      'A', r, r, 0, largeArcFlag, 0, end.x, end.y,
-      'Z'
-    ].join(' ');
-  },
-  polarToCartesian(cx, cy, r, angle) {
-    const rad = (angle-90)*Math.PI/180.0;
-    return { x: cx + (r * Math.cos(rad)), y: cy + (r * Math.sin(rad)) };
-  },
-  // --- Documentation & Reporting ---
-  renderDocumentation() {
-    const form = document.getElementById('doc-upload-form');
-    if (!form) return; // Exit if form doesn't exist
-    const preview = document.getElementById('doc-preview');
-    if (!preview) return; // Exit if preview doesn't exist
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const file = document.getElementById('doc-photo').files[0];
-      if (!file) { this.showToast('Please select a photo.'); return; }
-      
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const imageData = ev.target.result;
-        preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Analyzing photo with AI...</p>`;
-        
-        try {
-          // Send image to AI for analysis
-          const res = await fetch('/api/gemini/photo-analysis', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              image: imageData,
-              assets: this.assets 
-            })
-          });
-          const data = await res.json();
-          
-          if (data.result) {
-            preview.innerHTML = `
-              <img src="${imageData}" alt="Inspection Photo"/>
-              <div style="margin-top: 1rem; padding:1rem; background: #1c5858; border-radius: 8px; color: #f7fafc;">
-                <h4>AI Analysis:</h4>
-                <div style="white-space: pre-line; font-size: 0.9em;">${data.result}</div>
-              </div>
-            `;
-            this.showToast('Photo analyzed and tagged with AI!');
-          } else {
-            preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Auto-tagged to asset: <strong>${this.assets[Math.floor(Math.random()*this.assets.length)].name}</strong></p>`;
-            this.showToast('Photo auto-tagged and attached!');
-          }
-        } catch (error) {
-          preview.innerHTML = `<img src="${imageData}" alt="Inspection Photo" /><p>Auto-tagged to asset: <strong>${this.assets[Math.floor(Math.random()*this.assets.length)].name}</strong></p>`;
-          this.showToast('Photo auto-tagged and attached!');
-        }
-      };
-      reader.readAsDataURL(file);
-      form.reset();
-    };
-    
-    document.getElementById('generate-report').onclick = async () => {
-      // Get AI-generated content first
-      let aiContent = '';
-      try {
-        const res = await fetch('/api/gemini/pdf-content', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            events: this.events,
-            compliance: this.compliance,
-            cost: this.cost,
-            assets: this.assets
-          })
-        });
-        const data = await res.json();
-        if (data.result) {
-          aiContent = data.result;
-        }
-      } catch (error) {
-        console.log('AI content generation failed, using fallback');
-      }
-      
-      // PDF generation using jsPDF
-      if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
-        this.showToast('jsPDF library not loaded!');
-        return;
-      }
-      
-      const doc = new (window.jspdf ? window.jspdf.jsPDF : window.jsPDF)();
-      doc.setFontSize(18);
-      doc.text('AI-Generated Compliance Report', 14, 20);
-      doc.setFontSize(12);
-      
-      let y = 32
-      
-      if (aiContent) {
-        // Use AI-generated content
-        const lines = aiContent.split('\n');
-        for (let line of lines) {
-          if (y > 280) {
-            doc.addPage();
-            y = 20;
-          }
-          if (line.trim()) {
-            if (line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.') || line.startsWith('4.') || line.startsWith('5.') || line.startsWith('6.') || line.startsWith('7.')) {
-              doc.setFontSize(14);
-              doc.setFont(undefined, 'bold');
-            } else if (line.startsWith('   •')) {
-              doc.setFontSize(10);
-              doc.setFont(undefined, 'normal');
-            } else {
-              doc.setFontSize(12);
-              doc.setFont(undefined, 'normal');     }
-            doc.text(line, 14, y);
-            y += 7;
-          }
-        }
-      } else {
-        // Fallback content
-        doc.text('Recent Events:', 14, y);
-        y += 8;
-        this.events.slice(0,5).forEach(e => {
-          doc.text(`- ${e.type}: ${e.details} (${e.status})`, 16, y);
-          y += 7;
-        });
-        y += 4;
-        doc.text(`Compliance: ${this.compliance}%`, 14, y);
-        y += 8;
-        doc.text(`Cost: $${this.cost.toFixed(2)}${this.costUnit}`, 14, y);
-      }
-      
-      doc.save('ai_compliance_report.pdf');
-      this.showToast('AI-powered compliance report PDF generated!');
-    };
-    
-    this.renderMonthlyReviewLog();
-    document.getElementById('documentation-panel').innerHTML = `
-      <ul>
-        <li><strong>AI Photo Analysis:</strong> Inspection photos analyzed and tagged with AI</li>
-        <li><strong>Compliance Docs:</strong> Forms filled from inspection data</li>
-        <li><strong>AI-Generated Reports:</strong> Professional PDFs with AI insights</li>
-        <li><strong>Monthly Review:</strong> AI emails key trends (5 sig figs) + actions</li>
-      </ul>
-    `;
-  },
-  addMonthlyReview() {
-    const review = {
-      date: new Date(),
-      insights: this.aiInsights.slice()
-    };
-    this.monthlyReviews.unshift(review);
-    this.renderMonthlyReviewLog();
-  },
-  renderMonthlyReviewLog() {
-    const log = document.getElementById('monthly-review-log');
-    if (!log) return;
-    log.innerHTML = this.monthlyReviews.length === 0 ? '' :
-      `<strong>Monthly Reviews Sent:</strong><ul>${this.monthlyReviews.slice(0,3).map(r=>`<li>${r.date.toLocaleString()}: <em>${r.insights.join('; ')}</em></li>`).join('')}</ul>`;
-  },
-  // --- Benefits Table ---
-  renderBenefitsTable() {
-    const info = this.benefitsInfo;
-    const table = document.getElementById('benefits-table');
-    if (!table) return; // Exit if table doesn't exist
-    table.innerHTML = `
-      <table>
-        <tr><th>Area</th><th>Legacy Workflow</th><th>New Workflow</th></tr>
-        <tr><td>Dashboards <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Dashboards']}</span></span></td><td>5+ separate</td><td>1 unified</td></tr>
-        <tr><td>Decision Gates <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Decision Gates']}</span></span></td><td>5+</td><td>1</td></tr>
-        <tr><td>Average Alert Routing <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Average Alert Routing']}</span></span></td><td>15 min–1 hour</td><td>&lt; 1 min</td></tr>
-        <tr><td>Report Prep Time <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Report Prep Time']}</span></span></td><td>2–3 days</td><td>&lt; 5 min</td></tr>
-        <tr><td>Data Silos <span class="benefit-info" tabindex="0">&#9432;<span class="tooltip">${info['Data Silos']}</span></span></td><td>4+ systems</td><td>0 (cloud hub)</td></tr>
-      </table>
-    `;
-  },
-  // --- Modals & Toasts ---
-  setupModals() {
-    const overlay = document.getElementById('modal-overlay');
-    const closeBtn = document.getElementById('modal-close');
-    closeBtn.onclick = () => this.hideModal();
-    overlay.onclick = (e) => { if (e.target === overlay) this.hideModal(); };
-    document.addEventListener('keydown', (e) => {
-      if (!overlay.classList.contains('hidden') && e.key === 'Escape') this.hideModal();
-    });
-  },
-  showModal(html) {
-    const overlay = document.getElementById('modal-overlay');
-    document.getElementById('modal-content').innerHTML = html;
-    overlay.classList.remove('hidden');
-    overlay.focus();
-  },
-  hideModal() {
-    document.getElementById('modal-overlay').classList.add('hidden');
-  },
-  setupToasts() {
-    this.toastContainer = document.getElementById('toast-container');
-  },
-  showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    this.toastContainer.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 3000);
-  },
-  // --- Utils ---
-  timeAgo(date) {
-    const now = new Date();
-    const diff = Math.floor((now - new Date(date))/1000);
-    if (diff < 60) return diff + 's ago';
-    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-    return Math.floor(diff/86400) + 'd ago';
-  }
-}; 
+    print("Calling OpenRouter API from openrouter_query...")
+    start = time.time()
+    try:
+        resp = requests.post(OPENROUTER_API_URL, headers=headers, json=data, timeout=15)
+        elapsed = time.time() - start
+        print(f"OpenRouter API call finished in {elapsed:.2f} seconds with status {resp.status_code}")
+        if resp.status_code == 200:
+            try:
+                return {'result': resp.json()['choices'][0]['message']['content']}
+            except Exception:
+                return {'error': 'No response from OpenRouter.'}
+        else:
+            return {'error': f'OpenRouter API error: {resp.status_code} {resp.text}'}
+    except Exception as e:
+        return {'error': f'Exception during OpenRouter API call: {str(e)}'}
+
+@app.route('/')
+def serve_index():
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('.', path)
+
+@app.route('/api/gemini/analyze', methods=['POST', 'OPTIONS'])
+def analyze():
+    if request.method == 'OPTIONS':
+        return '', 204
+    data = request.get_json() or {}
+    events = data.get('events', [])
+    if not events:
+        return jsonify({'result': 'No events to analyze. Please add some events first.'})
+    prompt = f"""As an energy consultant, analyze these events:\n\n{events}\n\nGive insights, risk assessment, compliance, and recommendations."""
+    result = openrouter_query(prompt)
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 500
+    return jsonify(result)
+
+@app.route('/api/gemini/report', methods=['POST', 'OPTIONS'])
+def report():
+    if request.method == 'OPTIONS':
+        return '', 204
+    data = request.get_json() or {}
+    events = data.get('events', [])
+    compliance = data.get('compliance')
+    cost = data.get('cost')
+    prompt = f"""Generate a professional compliance and cost analysis report for a chemical energy facility:\n\nFACILITY DATA:\n- Compliance Rate: {compliance}%\n- Current Cost: ${cost}M\n- Recent Events: {events}\n\nPlease provide:\n1. Executive Summary\n2. Compliance Analysis (trends, gaps, recommendations)\n3. Cost Analysis (budget vs actual, efficiency metrics)\n4. Risk Assessment\n5. Action Items and Timeline\n6. Regulatory Compliance Status\n\nFormat as a professional report with clear sections and actionable recommendations."""
+    result = openrouter_query(prompt)
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 500
+    return jsonify(result)
+
+@app.route('/api/gemini/predict', methods=['POST', 'OPTIONS'])
+def predict():
+    if request.method == 'OPTIONS':
+        return '', 204
+    data = request.get_json() or {}
+    assets = data.get('assets', [])
+    if not assets:
+        return jsonify({'result': 'No assets to analyze. Please check asset data.'})
+    prompt = "Hi ai can u tell me your model name and write a small haiku about energy"
+    result = openrouter_query(prompt)
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 500
+    return jsonify(result)
+
+@app.route('/api/gemini/photo-analysis', methods=['POST', 'OPTIONS'])
+def photo_analysis():
+    if request.method == 'OPTIONS':
+        return '', 204
+    try:
+        data = request.get_json() or {}
+        image_data = data.get('image')  # Base64 encoded image
+        asset_context = data.get('assets', [])
+        if not image_data:
+            return jsonify({'error': 'No image data provided'})
+        if image_data.startswith('data:image'):
+            image_data = image_data.split(',')[1]
+        prompt = f"""Analyze this inspection photo from a chemical energy facility and provide intelligent tagging and analysis.\n\nASSET CONTEXT:\n{asset_context}\n\nPlease provide:\n1. Asset Identification\n2. Visual Inspection Findings\n3. Potential Issues or Concerns\n4. Compliance Implications\n5. Recommended Actions\n6. Risk Assessment\n7. Maintenance Recommendations\n\nBe specific about what you observe and provide actionable insights for facility management.\n\n[NOTE: The image is base64-encoded and not directly viewable by OpenRouter, so answer based on the context provided above.]"""
+        result = openrouter_query(prompt)
+        if 'error' in result:
+            return jsonify({'error': result['error']}), 500
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': f'Photo analysis failed: {str(e)}'}), 500
+
+@app.route('/api/gemini/pdf-content', methods=['POST', 'OPTIONS'])
+def pdf_content():
+    if request.method == 'OPTIONS':
+        return '', 204
+    data = request.get_json() or {}
+    events = data.get('events', [])
+    compliance = data.get('compliance')
+    cost = data.get('cost')
+    assets = data.get('assets', [])
+    prompt = f"""Generate comprehensive content for a professional compliance report PDF for a chemical energy facility.\n\nFACILITY DATA:\n- Compliance Rate: {compliance}%\n- Current Cost: ${cost}M\n- Recent Events: {events}\n- Assets: {assets}\n\nPlease provide a structured report with the following sections:\n\n1. EXECUTIVE SUMMARY\n   - Key findings and recommendations\n   - Overall facility status\n\n2. COMPLIANCE ANALYSIS\n   - Current compliance status\n   - Regulatory requirements met/missed\n   - Compliance trends and gaps\n   - Risk assessment\n\n3. OPERATIONAL PERFORMANCE\n   - Asset health overview\n   - Event analysis and patterns\n   - Performance metrics\n4. COST ANALYSIS\n   - Budget vs actual spending\n   - Cost efficiency metrics\n   - ROI on maintenance activities\n\n5. RISK ASSESSMENT\n   - Identified risks and severity\n   - Mitigation strategies\n   - Priority actions\n\n6. RECOMMENDATIONS\n   - Immediate actions (next 30s)\n   - Short-term improvements (3-6 months)\n   - Long-term strategic initiatives\n\n7. APPENDICES\n   - Detailed asset status\n   - Event timeline\n   - Compliance checklist\n\nFormat this as a professional report suitable for regulatory submission and executive review."""
+    result = openrouter_query(prompt)
+    if 'error' in result:
+        return jsonify({'error': result['error']}), 500
+    return jsonify(result)
+
+@app.route('/api/proxy', methods=['POST'])
+def proxy():
+    data = request.json
+    api_key = os.getenv('OPENROUTER_API_KEY')
+    if not api_key:
+        return jsonify({'error': 'API key not set in environment'}), 500
+    try:
+        print("Calling OpenRouter API from /api/proxy route...")
+        start = time.time()
+        response = requests.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            json=data,
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            timeout=15
+        )
+        elapsed = time.time() - start
+        print(f"OpenRouter API call (proxy) finished in {elapsed:.2f} seconds with status {response.status_code}")
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.RequestException as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True) 
